@@ -44,7 +44,7 @@ $DEBUG = $main'DEBUG;
 
 sub main'ParseMailHeader  ## Public
 {
-    #local($save1, $save2) = ($*, $/);
+    local($save) = $/;
     local($FH, *array) =  @_;
     local ($keyw, $val);
 
@@ -54,10 +54,9 @@ sub main'ParseMailHeader  ## Public
     local($package) = caller;
     $FH =~ s/^[^':]+$/$package'$&/;
 
-    #($*, $/) = (1, '');
+    $/ = '';
     $array = $_ = <$FH>;
     s/\n\s+/ /mg;
-       
     @array = split('\n');
     foreach $_ (@array)
     {
@@ -69,7 +68,7 @@ sub main'ParseMailHeader  ## Public
 	    $array{$keyw} = $val;
 	}
     }
-    #($*, $/) = ($save1, $save2); 
+    $/ = $save;
 }
 
 
@@ -91,17 +90,22 @@ sub main'RetMailAddr  ## Public
 }
 
 # @addrs = &ParseAddrs($addr_list)
-sub main'ParseAddrs {
+sub main'ParseAddrs
+{
+
     local($_) = shift;
+  local (@pa);
     1 while s/\([^\(\)]*\)//g; 		# strip comments
-    1 while s/"[^"]*"\s//g;		# strip comments"
-    my @x = split(/,/);				# split into parts
-    foreach (@x) {
+  1 while s/"[^"]*"\s//g;               # strip comments
+
+  @pa = split(/,/);                     # split into parts
+  foreach (@pa)
+  {
 	1 while s/.*<(.*)>.*/$1/;
 	s/^\s+//;
 	s/\s+$//;
     }
-    @x;
+  @pa;
 }
 
 # Check to see if a list is valid.  If it is, return the validated list
@@ -639,7 +643,6 @@ EOM
 	&main'abort("HOSTILE ADDRESS (tried to subscribe list) $addr"); # '
 	return undef;
     }
-
     # if the is a / in it, it may be an attempt to write to a file.
     # or it may be an X.400, HP Openmail or some other dain bramaged
     # address 8-(. We check this by breaking the address on '/'s
