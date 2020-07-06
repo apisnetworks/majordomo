@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+
+## $VARIABLES should be self explanitory
+## this generates the additions to the aliases file and prints to STDOUT
+## released with majordom rpm under GPL
+## use at your own risk :) but it works for me.
+
+$HOME="/usr/lib/majordomo";
+$DATA="/var/lib/majordomo";
+
+$LISTNAME="netus-hicap";
+$LISTOWNER="chrismcc\@netus.net";
+$HOSTNAME="netus.net";
+
+$MAKEDIRECTORYS="yes";
+
+print <<EOF
+######  definitions for majordomo list ${LISTNAME} ##
+##############    regular list    ###################
+
+${LISTNAME}-owner:          ${LISTOWNER}
+owner-${LISTNAME}:          ${LISTNAME}-owner
+${LISTNAME}-approval:       ${LISTNAME}-owner
+owner-${LISTNAME}-outgoing: ${LISTNAME}-owner
+
+${LISTNAME}:   "|/$HOME/wrapper resend -R -r ${LISTNAME} -l ${LISTNAME} -h ${HOSTNAME} ${LISTNAME}-outgoing"
+${LISTNAME}-outgoing:     "|/usr/sbin/bulk_mailer ${LISTNAME}-owner\@${HOSTNAME} /$DATA/lists/${LISTNAME}", ${LISTNAME}-archive, ${LISTNAME}-digestify
+${LISTNAME}-request:  "|/$HOME/wrapper majordomo -l ${LISTNAME}"
+${LISTNAME}-archive: "|/$HOME/wrapper archive2.pl -f /$DATA/archives/${LISTNAME}.archive -u -m"
+
+###  Digest list       ################################
+
+${LISTNAME}-digestify: "|/$HOME/wrapper digest -r -C -l ${LISTNAME}-digest ${LISTNAME}-digest-outgoing"
+
+${LISTNAME}-digest:       ${LISTNAME}
+
+${LISTNAME}-digest-outgoing:     "|/usr/sbin/bulk_mailer ${LISTNAME}-owner@${HOSTNAME} /$DATA/lists/${LISTNAME}-digest"
+
+${LISTNAME}-digest-request:  "|/$HOME/wrapper majordomo -l ${LISTNAME}-digest"
+
+${LISTNAME}-digest-owner:          ${LISTNAME}-owner
+owner-${LISTNAME}-digest:          ${LISTNAME}-owner
+${LISTNAME}-digest-approval:       ${LISTNAME}-owner
+owner-${LISTNAME}-digest-outgoing: ${LISTNAME}-owner
+### end majordomo list ${LISTNAME} ################
+
+EOF
+;
+
+if  ( $MAKEDIRECTORYS eq "yes" )
+	{
+	open (FILE , ">/$DATA/lists/${LISTNAME}" ); 
+	print FILE "${LISTOWNER}\n";
+	close FILE;
+	chown (91,91,"/$DATA/lists/${LISTNAME}");
+	chmod 0660,"/$DATA/lists/${LISTNAME}";
+	
+	open (FILE , ">/$DATA/lists/${LISTNAME}.info"); 
+	print FILE "This is the info for list ${LISTNAME}\n\n";
+	close FILE;
+	chown (91,91,"/$DATA/lists/${LISTNAME}.info");
+	chmod 0660,"/$DATA/lists/${LISTNAME}.info";
+	
+	open (FILE , ">/$DATA/lists/${LISTNAME}-digest" ); 
+	print FILE "${LISTOWNER}\n";
+	close FILE;
+	chown (91,91,"/$DATA/lists/${LISTNAME}-digest");
+	chmod 0660,"/$DATA/lists/${LISTNAME}-digest";
+	
+	open (FILE , ">/$DATA/lists/${LISTNAME}-digest.info"); 
+	print FILE "This is the info for list ${LISTNAME}-digest\n";
+	print FILE "This list is managed by $LISTOWNER\n\n";
+	close FILE;
+	chown (91,91,"/$DATA/lists/${LISTNAME}-digest.info");
+	chmod 0660,"/$DATA/lists/${LISTNAME}-digest.info";
+	
+	mkdir ("/$DATA/lists/${LISTNAME}-digest.archive",0750);
+	chown 91,91,"/$DATA/lists/${LISTNAME}-digest.archive";
+	
+	mkdir ("/$DATA/digest/${LISTNAME}-digest",0750);
+	chown 91,91,"/$DATA/digest/${LISTNAME}-digest";
+	
+	mkdir ("/$DATA/digest/${LISTNAME}",0750);
+	chown 91,91,"/$DATA/digest/${LISTNAME}";
+	}; # end if MAKEDIRS
