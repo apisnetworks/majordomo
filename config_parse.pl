@@ -75,6 +75,7 @@ $installing_defaults = 0; # Set to 1 when installing defaults, in case
 # otherwise the value is the default value for the keyword.
 # if the value starts with #!, the rest of the value is eval'ed
 %known_keys = (
+	'resend_dmarc',		'no', # Rewrite sender to list name for DMARC avoidance
 	'welcome',		'yes', # send welcome msg to new subscribers
 	'announcements',	'yes', # send sub/unsub audits to list owner
 	'get_access',		"open\001closed\001list\001list", # open, anyone can access
@@ -146,6 +147,9 @@ $installing_defaults = 0; # Set to 1 when installing defaults, in case
 # An associative array of comments for all of the keys
 # The text is wrapped and filled on output.
 %comments = (
+'resend_dmarc',
+"Set to yes if you want this list to rewrite the From address to the 
+mailing list address. This is necessary to avoid DMARC violations",
 'welcome',
 "If set to yes, a welcome message (and optional 'intro' file) will be
 sent to the newly subscribed user.",
@@ -440,6 +444,7 @@ the queue exceeds this number of days.",
 	'date_intro',		'majordomo',
 	'archive_dir',		'majordomo',
 # stuff for resend below
+        'resend_dmarc',		'resend',
         'moderate',		'resend',
         'moderator',		'resend',
         'approve_passwd',	'resend',
@@ -496,6 +501,7 @@ the queue exceeds this number of days.",
 	'date_intro',		'grab_bool',
 	'archive_dir',		'grab_absolute_dir',
 # stuff for resend below
+        'resend_dmarc',		'grab_bool',
         'moderate',		'grab_bool',
         'moderator',		'grab_word',
         'approve_passwd', 	'grab_word',

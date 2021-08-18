@@ -177,13 +177,16 @@ $opt_s = &cf_ck_bool($opt_l,"administrivia")
 			if &cf_ck_bool($opt_l,"administrivia");
 $opt_d = &cf_ck_bool($opt_l,"debug") 
 			if &cf_ck_bool($opt_l,"debug");
-
+$opt_D = &cf_ck_bool($opt_l,"resend_dmarc")
+			if &cf_ck_bool($opt_l,"resend_dmarc");	
 # Construct the envelope sender for outbound messages
 if (defined($opt_f)) {
     $sender = $opt_f;
 } else {
     $sender = "$opt_l-request";
 }
+# Grab list name plus host for use later
+$sendDMARC = "$opt_l\@$opt_h";
 
 # If the sender doesn't contain an `@', tack on one, followed by the
 # hostname
@@ -513,7 +516,14 @@ open(MAILIN, "$TMPDIR/resend.$$.out");
 # spit it out!
 #
 while (<MAILIN>) {
-    print MAILOUT $_;
+	## START - DMARC
+	if (/^From:\s(.+)/i && defined($opt_D)) {
+		$fromDMARC = $from =~ s/\s*<?[\w\.\-]+@(([\w\-]+)\.)+(\w){2,3}.*$//;
+		$_ = "From: $from <$sendDMARC>\n";
+		print STDERR "$0: DMARC From: $sendDMARC\n" if $DEBUG;
+	}
+	## END - DMARC
+	print MAILOUT $_;
 }
 
 # cleanup
